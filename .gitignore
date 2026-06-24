@@ -1,2 +1,6 @@
 node_modules/
 .env
+messages.json
+messages_grouped.json
+categorized.json
+flagged_contributors.json

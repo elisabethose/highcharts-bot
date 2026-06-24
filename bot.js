@@ -42,8 +42,9 @@ function findMessage(data, messageId) {
 async function isOfficialRole(message) {
   try {
     const member = await message.guild.members.fetch(message.author.id);
-    const roles = member.roles.cache.map(r => r.name.toLowerCase());
-    return STAFF_ROLE_NAMES.some(staff => roles.includes(staff));
+    const roles = member.roles.cache.map(r => r.name);
+    console.log(`Roles for ${message.author.username}:`, roles);
+    return roles.some(r => STAFF_ROLE_NAMES.includes(r));
   } catch (e) {
     console.log('Could not fetch roles for', message.author.username);
     return false;
