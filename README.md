@@ -24,17 +24,20 @@ This is a simple discord bot meant to capture and record messages sent in a Ques
 **Run the bot** (captures messages live):
    node bot.js
 
-**Categorize captured messages:**
-   node categorize.js
-
+**Run all other files:**
+   node run.js
 
 ## Files
 
 - `bot.js` — Discord bot, captures messages to messages.json
+- `group.js`- groups messages that most likely are connected within the last 24   hours
 - `categorize.js` — sends messages to Claude API, outputs categorized.json
-- `upload.js` — uploads categorized.json to Supabase
+- `flagged_contributors.js`- flaggs people who are high contributors but not official staff
+- `run.js`- runs: group.js, categorize.js and flagged_contributors.js
 - `messages.json` — raw captured data (git ignored)
+- `messages_grouped.json` — grouped messages who did not use reply function (git ignored)
 - `categorized.json` — categorized data (git ignored)
+- `flagged_contributors.json` — list of people who are high contributors (git ignored)
 
 
 ## Extra Info
