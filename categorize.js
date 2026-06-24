@@ -1,9 +1,5 @@
-
-require('dotenv').config();
-const Anthropic = require('@anthropic-ai/sdk');
+const ollama = require('ollama').default;
 const fs = require('fs');
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const CATEGORIES = [
   'Installation',
@@ -17,19 +13,18 @@ const CATEGORIES = [
 ];
 
 async function categorizeMessage(content) {
-  const response = await client.messages.create({
-    model: 'claude-opus-4-8',
-    max_tokens: 50,
+  const response = await ollama.chat({
+    model: 'llama3',
     messages: [{
       role: 'user',
       content: `Categorize this Highcharts support question into exactly one of these categories: ${CATEGORIES.join(', ')}. Reply with only the category name, nothing else. Question: "${content}"`
     }]
   });
-  return response.content[0].text.trim();
+  return response.message.content.trim();
 }
 
 async function main() {
-  const data = JSON.parse(fs.readFileSync('messages.json'));
+  const data = JSON.parse(fs.readFileSync('messages_grouped.json'));
 
   for (const message of data) {
     message.category = await categorizeMessage(message.content);
@@ -45,3 +40,5 @@ async function main() {
   fs.writeFileSync('categorized.json', JSON.stringify(data, null, 2));
   console.log('Done! Saved to categorized.json');
 }
+
+main();
