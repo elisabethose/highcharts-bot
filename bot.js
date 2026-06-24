@@ -2,14 +2,16 @@ require('dotenv').config();
 const { Client, IntentsBitField } = require('discord.js');
 const fs = require('fs');
 
-const CHANNELS_TO_CAPTURE = ['questions'];
 const FILE = 'messages.json';
+
+const STAFF_ROLE_NAMES = ['Highsoft staff'];
 
 const client = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.MessageContent,
+    IntentsBitField.Flags.GuildMembers,
   ]
 });
 
@@ -37,34 +39,43 @@ function findMessage(data, messageId) {
   return null;
 }
 
-client.on('messageCreate', (message) => {
-  if (message.author.bot) return;
-  if (!CHANNELS_TO_CAPTURE.includes(message.channel.name)) return;
+async function isOfficialRole(message) {
+  try {
+    const member = await message.guild.members.fetch(message.author.id);
+    const roles = member.roles.cache.map(r => r.name.toLowerCase());
+    return STAFF_ROLE_NAMES.some(staff => roles.includes(staff));
+  } catch (e) {
+    console.log('Could not fetch roles for', message.author.username);
+    return false;
+  }
+}
 
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  const official = await isOfficialRole(message);
   const data = loadData();
   const replyToId = message.reference?.messageId || null;
+
+  const entry = {
+    messageId: message.id,
+    channel: message.channel.name,
+    author: message.author.username,
+    isOfficial: official,
+    content: message.content,
+    timestamp: message.createdAt,
+  };
 
   if (replyToId) {
     const parent = findMessage(data, replyToId);
     if (parent) {
       if (!parent.replies) parent.replies = [];
-      parent.replies.push({
-        messageId: message.id,
-        author: message.author.username,
-        content: message.content,
-        timestamp: message.createdAt,
-      });
-      console.log('Reply captured under:', parent.content);
+      parent.replies.push(entry);
+      console.log(`Reply captured (official: ${official}):`, message.content);
     }
   } else {
-    data.push({
-      messageId: message.id,
-      author: message.author.username,
-      content: message.content,
-      timestamp: message.createdAt,
-      replies: [],
-    });
-    console.log('New question captured:', message.content);
+    data.push({ ...entry, replies: [] });
+    console.log(`New message captured (official: ${official}):`, message.content);
   }
 
   saveData(data);
