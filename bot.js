@@ -4,6 +4,9 @@ const fs = require('fs');
 
 const FILE = 'messages.json';
 
+//Name should match exacy role name in Discord server, this is used to determine if a user is official or not, can be changed if needed
+//one could add a role for high contributors you have persmission to use content from, this way they won't be flagged if we already have
+//permission for usage of content
 const STAFF_ROLE_NAMES = ['Highsoft staff'];
 
 const client = new Client({
@@ -15,6 +18,7 @@ const client = new Client({
   ]
 });
 
+// Log when the bot is ready
 client.once('clientReady', () => {
   console.log(`Bot is online as ${client.user.tag}`);
 });
@@ -26,10 +30,13 @@ function loadData() {
   return [];
 }
 
+// Save the data back to messages.json
 function saveData(data) {
   fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
 }
 
+// Find a message by its ID in the data, including replies to determine if a message is a reply to another message, this is used to group messages into threads 
+// and if message is already in the data, it will be updated with new information, otherwise it will be added as a new entry
 function findMessage(data, messageId) {
   for (const entry of data) {
     if (entry.messageId === messageId) return entry;
@@ -39,6 +46,7 @@ function findMessage(data, messageId) {
   return null;
 }
 
+// Function to check if a user has an official role in the Discord server, this is used to determine if a user is official or not, so that we don't need to ask permission later for usage of content
 async function isOfficialRole(message) {
   try {
     const member = await message.guild.members.fetch(message.author.id);
@@ -51,6 +59,7 @@ async function isOfficialRole(message) {
   }
 }
 
+// Listen for new messages in the Discord server, capture them, and save to messages.json
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
 

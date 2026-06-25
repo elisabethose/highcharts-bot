@@ -1,6 +1,7 @@
 const ollama = require('ollama').default;
 const fs = require('fs');
 
+//groups by day this is to make it simpler to sort through for the LLM, but it takes the assumption that the questions are answered within the same day
 function groupByDay(messages) {
   const days = {};
   for (const msg of messages) {
@@ -11,6 +12,7 @@ function groupByDay(messages) {
   return days;
 }
 
+// Function to group messages into Q&A threads using the Ollama API, based on content and topical relevance
 async function groupMessages(messages) {
   const formatted = messages.map((m, i) =>
     `[${i}] ${m.author}: ${m.content}`
@@ -20,33 +22,34 @@ async function groupMessages(messages) {
     model: 'llama3',
     messages: [{
       role: 'user',
+      //can experiment with this one, but I think it is good enough for now, the model should be able to understand the context and group them accordingly
       content: `Here are messages from a Highcharts support channel posted within the same day. Group them into Q&A conversations based on content — which messages are questions and which are answers to those questions? Ignore time, focus only on whether messages are topically related.
 
-Return ONLY valid JSON in this format, no explanation:
-[
-  {
-    "question_index": 0,
-    "answer_indices": [2, 3]
-  }
-]
+  Return ONLY valid JSON in this format, no explanation:
+  [
+    {
+      "question_index": 0,
+      "answer_indices": [2, 3]
+    }
+  ]
 
-Only include messages you are confident belong together. Leave out standalone messages.
+  Only include messages you are confident belong together. Leave out standalone messages.
 
-Messages:
-${formatted}`
-    }]
-  });
+  Messages:
+  ${formatted}`
+      }]
+    });
 
-  try {
-    // Strip any markdown code blocks if llama3 adds them
-    const raw = response.message.content.trim().replace(/```json|```/g, '').trim();
-    return JSON.parse(raw);
-  } catch (e) {
-    console.log('Could not parse response for this batch, skipping.');
-    return [];
-  }
+    try {
+      const raw = response.message.content.trim().replace(/```json|```/g, '').trim();
+      return JSON.parse(raw);
+    } catch (e) {
+      console.log('Could not parse response for this batch, skipping.');
+      return [];
+    }
 }
 
+// Main function to read messages.json, group messages into threads, and save the result to messages_grouped.json
 async function main() {
   const raw = JSON.parse(fs.readFileSync('messages.json'));
 
