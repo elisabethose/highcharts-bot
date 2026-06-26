@@ -3,7 +3,7 @@ const { Client, IntentsBitField } = require('discord.js');
 const fs = require('fs');
 
 const FILE = 'messages.json';
-const CHANNEL_ID = 'PASTE_CHANNEL_ID_HERE';
+const CHANNEL_ID = '1518584639709642842'; // Replace with your actual channel ID
 const STAFF_ROLE_NAMES = ['Highsoft staff'];
 
 // Create a new Discord client with the necessary intents

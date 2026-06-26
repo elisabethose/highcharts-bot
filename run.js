@@ -8,4 +8,3 @@ function run(script) {
 run('group.js');
 run('flag_contributors.js');
 run('categorize.js');
-run('upload.js');
