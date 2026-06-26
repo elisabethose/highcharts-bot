@@ -40,8 +40,6 @@ function main() {
         messageCount: count,
         //not required but one should ask, hence the consent status, this could be used to track if a user has been contacted for consent and if they have given it or not
         status: 'consent_required',
-        contacted: false,
-        consentGiven: null,
       });
     }
   }
